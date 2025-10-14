@@ -3,21 +3,11 @@ package DatabaseFunctions
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/jackc/pgx/v5"
+	"golang.org/x/tools/go/analysis/passes/unmarshal"
+	"gopkg.in/yaml.v2"
 )
 
-func Db_init() (*pgx.Conn,error){
-	conn,err:=pgx.Connect(context.Background(),"postgres://postgres:rootrewansh@localhost:5432/postgres")
-
-	if (err!=nil){
-		fmt.Println(err)
-
-	}
-
-	return conn, err
-	
-
-
-}
-
+func

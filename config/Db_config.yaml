@@ -1,0 +1,14 @@
+jobs:
+  - name: replicate_users
+    source:
+      type: postgres
+      dsn: "host=${SRC_HOST} port=${SRC_PORT} user=${SRC_USER} password=${SRC_PASS} dbname=${SRC_DB} sslmode=${SRC_SSLMODE}"
+      
+      incremental_field: "updated_at"
+      table : "${SRC_TABLE}"
+
+    destination:
+      type: postgres
+      dsn: "host=${DEST_HOST} port=${DEST_PORT} user=${DEST_USER} password=${DEST_PASS} dbname=${DEST_DB} sslmode=${DEST_SSLMODE}"
+      table: "${DEST_TABLE}"
+    schedule: "${REPLICATION_INTERVAL}"
