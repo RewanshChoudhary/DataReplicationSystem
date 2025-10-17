@@ -1,21 +1,17 @@
 package main
 
 import (
-	"context"
-	"fmt"
-	"log"
-
 	"github.com/RewanshChoudhary/DataReplicationSystem/DatabaseFunctions"
+	"github.com/RewanshChoudhary/DataReplicationSystem/util"
+	"github.com/joho/godotenv"
 )
 
-func main(){
-	conn,err:=DatabaseFunctions.Db_init()
-	ctx:=context.Background()
-	createQuery:=""
+func main() {
 
-	
-	
+	err := godotenv.Load()
+	util.HandleError(err)
+
+	// DEBUG: Check variables
+	DatabaseFunctions.Init_Db()
+
 }
-	
-
-

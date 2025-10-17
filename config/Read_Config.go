@@ -1,10 +1,11 @@
 package config
 
 import (
+	
 	"fmt"
 	"os"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
@@ -25,7 +26,7 @@ type Connection struct {
 	Table            string `yaml:"table"`
 }
 
-func loadFile(fileName string) (*Config, error) {
+func LoadFile() (*Config, error) {
 	configs, err := os.ReadFile("config/Db_config.yaml")
 	if err != nil {
 		return nil, fmt.Errorf("error reading YAML file: %w", err)
@@ -39,7 +40,6 @@ func loadFile(fileName string) (*Config, error) {
 	return &config, nil
 }
 
-func expandEnv(s string ) string {
-	
-
+func ExpandDSN(dsn string) string {
+    return os.ExpandEnv(dsn)
 }
