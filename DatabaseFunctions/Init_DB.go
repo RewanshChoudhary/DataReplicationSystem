@@ -3,13 +3,13 @@ package DatabaseFunctions
 import (
 	"context"
 	"fmt"
+
 	"github.com/RewanshChoudhary/DataReplicationSystem/config"
 	"github.com/RewanshChoudhary/DataReplicationSystem/util"
 	"github.com/jackc/pgx/v5"
-	"os"
 )
 
-func Init_Db() {
+func Init_Db() (*pgx.Conn, *pgx.Conn) {
 	ctx := context.Background()
 
 	configs, err := config.LoadFile()
@@ -26,30 +26,13 @@ func Init_Db() {
 	srcConn, err := pgx.Connect(ctx, srcDSN)
 	util.HandleError(err)
 	fmt.Println("✅ Source DB connected")
-	defer srcConn.Close(ctx)
+
+	util.GetSchema(ctx, srcConn, "person_details")
 
 	destConn, err := pgx.Connect(ctx, destDSN)
 	util.HandleError(err)
 	fmt.Println("✅ Destination DB connected")
-	defer destConn.Close(ctx)
-	query := `
-    SELECT column_name
-    FROM information_schema.columns
-    WHERE table_name = $1
-    ORDER BY ordinal_position
-`
 
-	rows, err := srcConn.Query(ctx, query, os.Getenv("SRC_TABLE"))
-	util.HandleError(err)
-	defer rows.Close()
+	return srcConn, destConn
 
-	fmt.Println("🔹 Columns:")
-	for rows.Next() {
-		var columnName string
-		err = rows.Scan(&columnName)
-		util.HandleError(err)
-		fmt.Println(columnName)
-	}
-
-	util.HandleError(rows.Err())
 }

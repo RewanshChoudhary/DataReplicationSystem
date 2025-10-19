@@ -11,4 +11,4 @@ jobs:
       type: postgres
       dsn: "host=${DEST_HOST} port=${DEST_PORT} user=${DEST_USER} password=${DEST_PASS} dbname=${DEST_DB} sslmode=${DEST_SSLMODE}"
       table: "${DEST_TABLE}"
-    schedule: "${REPLICATION_INTERVAL}"
+      schedule: "${REPLICATION_INTERVAL}"
