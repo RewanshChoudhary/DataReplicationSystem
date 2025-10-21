@@ -10,8 +10,3 @@ func HandleError(err error) {
 	}
 
 }
-func FormatError(err error) {
-	if err != nil {
-		fmt.Errorf("The err %s occurred when  ", err)
-	}
-}

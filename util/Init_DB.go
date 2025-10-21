@@ -1,19 +1,21 @@
-package DatabaseFunctions
+package util
 
 import (
 	"context"
 	"fmt"
 
 	"github.com/RewanshChoudhary/DataReplicationSystem/config"
-	"github.com/RewanshChoudhary/DataReplicationSystem/util"
+
 	"github.com/jackc/pgx/v5"
 )
 
-func Init_Db() (*pgx.Conn, *pgx.Conn) {
+func Init_Db() (*pgx.Conn, *pgx.Conn, error) {
 	ctx := context.Background()
 
 	configs, err := config.LoadFile()
-	util.HandleError(err)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	job := configs.Jobs[0]
 	srcDSN := config.ExpandDSN(job.Source.DSN)
@@ -24,15 +26,16 @@ func Init_Db() (*pgx.Conn, *pgx.Conn) {
 	fmt.Println("DEST DSN:", destDSN)
 
 	srcConn, err := pgx.Connect(ctx, srcDSN)
-	util.HandleError(err)
-	fmt.Println("✅ Source DB connected")
+	if err != nil {
+		return nil, nil, err
 
-	util.GetSchema(ctx, srcConn, "person_details")
+	}
+	fmt.Println(" Source DB connected")
 
 	destConn, err := pgx.Connect(ctx, destDSN)
-	util.HandleError(err)
-	fmt.Println("✅ Destination DB connected")
+	HandleError(err)
+	fmt.Println(" Destination DB connected")
 
-	return srcConn, destConn
+	return srcConn, destConn, nil
 
 }
