@@ -42,7 +42,7 @@ FROM information_schema.columns
 
 	}
 
-   
+  
 destCols,err:=destConn.Query(ctx,query,os.Getenv("DEST_TABLE"))
   defer desCols.Close()
 
