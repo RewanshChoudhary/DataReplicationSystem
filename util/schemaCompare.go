@@ -13,35 +13,71 @@ type ColumnInfo struct {
 	Column_default string
 }
 
-func GetSchema() []ColumnInfo {
+func GetSchema() ([]ColumnInfo,[]ColumnInfo) {
 	query := `
     SELECT column_name, data_type, is_nullable, column_default 
-    FROM information_schema.columns
+FROM information_schema.columns
 		WHERE table_name = $1
     ORDER BY ordinal_position
 `
 	fmt.Println("no P")
-	srcConn, _, err := Init_Db()
+	srcConn,destConn, err := Init_Db()
 	ctx := context.Background()
 
-	rows, err := srcConn.Query(ctx, query, os.Getenv("SRC_TABLE"))
+	srcCols, err := srcConn.Query(ctx, query, os.Getenv("SRC_TABLE"))
 	HandleError(err)
-	defer rows.Close()
-	var r []ColumnInfo
+	defer srcCols.Close()
+	var src,dest []ColumnInfo
 
-	fmt.Println(" Columns:")
-	for rows.Next() {
+
+	
+	for srcCols.Next(){
 		var columninfo ColumnInfo
-
-		err = rows.Scan(&columninfo.ColumnName, &columninfo.Datatype, &columninfo.Is_nullable, &columninfo.Column_default)
-
+	
+		err = srcCols.Scan(&columninfo.ColumnName, &columninfo.Datatype, &columninfo.Is_nullable, &columninfo.Column_default)
+    HandleError(err)
+		
 		fmt.Println(columninfo)
-		r = append(r, columninfo)
+		src = append(src, columninfo)
 
 	}
 
-	HandleError(rows.Err())
-	return r
+   
+destCols,err:=destConn.Query(ctx,query,os.Getenv("DEST_TABLE"))
+  defer desCols.Close()
+
+HandleError(err)
+
+for destCols.Next(){
+	var columninfo ColumnInfo
+	err=destCols.Scan(&columninfo.ColumnName, &columninfo.Datatype, &columninfo.Is_nullable, &columninfo.Column_default)
+    HandleError(err)
+		dest =append(dest,columninfo)
+
+
+
+ }
+
+ for i :=range src {
+	 sourceCols:=src[i]
+	 destiantionCols:=dest[i]
+
+	 if(compareSchema(sourceCols,destiantionCols)){
+		  fmt.Println("The schemas are equal with same sequence")
+
+		 
+	 }else {
+		 fmt.Println("The schemas are not equal but can contain different sequences of same columns ")
+
+	 }
+
+
+
+
+ }
+  
+
+
 }
 
 func compareSchema() {
@@ -57,6 +93,17 @@ func compareSchema() {
 		HandleError(err)
 	}
 	srcCols := srcConn.Query(ctx, query, os.Getenv("SRC_TABLE"))
-	destCols := destConn.Query(ctx, query, os.GetEnv("DEST_TABLE"))
+	destCols := destConn.Query(ctx, query, os.Getenv("DEST_TABLE"))
 
+	for 
+
+
+}
+
+func CompareColumns(a, b ColumnInfo) bool {
+	return strings.EqualFold(a.ColumnName, b.ColumnName) &&
+		strings.EqualFold(a.Datatype, b.Datatype) &&
+		a.IsNullable == b.IsNullable &&
+		((a.ColumnDefault == nil && b.ColumnDefault == nil) ||
+			(a.ColumnDefault != nil && b.ColumnDefault != nil && *a.ColumnDefault == *b.ColumnDefault))
 }

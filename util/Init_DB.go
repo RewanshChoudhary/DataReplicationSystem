@@ -32,6 +32,8 @@ func Init_Db() (*pgx.Conn, *pgx.Conn, error) {
 	}
 	fmt.Println(" Source DB connected")
 
+	GetSchemka
+
 	destConn, err := pgx.Connect(ctx, destDSN)
 	HandleError(err)
 	fmt.Println(" Destination DB connected")

@@ -1,7 +1,6 @@
 package config
 
 import (
-	
 	"fmt"
 	"os"
 
@@ -41,5 +40,6 @@ func LoadFile() (*Config, error) {
 }
 
 func ExpandDSN(dsn string) string {
-    return os.ExpandEnv(dsn)
+	return os.ExpandEnv(dsn)
 }
+
