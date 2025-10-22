@@ -26,7 +26,7 @@ FROM information_schema.columns
 	ctx := context.Background()
 
 	srcCols, err := srcConn.Query(ctx, query, os.Getenv("SRC_TABLE"))
-	HandleError(err)
+	HandleError(err, "While querying src Db")
 	defer srcCols.Close()
 	var src, dest []ColumnInfo
 
@@ -34,7 +34,7 @@ FROM information_schema.columns
 		var columninfo ColumnInfo
 
 		err = srcCols.Scan(&columninfo.ColumnName, &columninfo.Datatype, &columninfo.Is_nullable, &columninfo.Column_default)
-		HandleError(err)
+		HandleError(err, "while storing src col details")
 
 		fmt.Println(columninfo)
 		src = append(src, columninfo)
@@ -44,33 +44,41 @@ FROM information_schema.columns
 	destCols, err := destConn.Query(ctx, query, os.Getenv("DEST_TABLE"))
 	defer destCols.Close()
 
-	HandleError(err)
+	HandleError(err, "While destiantion querying ")
 
 	for destCols.Next() {
 		var columninfo ColumnInfo
 		err = destCols.Scan(&columninfo.ColumnName, &columninfo.Datatype, &columninfo.Is_nullable, &columninfo.Column_default)
-		HandleError(err)
+		HandleError(err, "While destiantion column storing")
 		dest = append(dest, columninfo)
 
 	}
+	return src, dest
 }
 
 func compareSchema() {
 	src, dest := GetSchema()
+	equal := true
 
 	for i := range src {
 		sourceCols := src[i]
 		destiantionCols := dest[i]
-
-		if CompareColumns(sourceCols, destiantionCols) {
-			fmt.Println("The schemas are equal with same sequence")
-
-		} else {
-			fmt.Println("The schemas are not equal but can contain different sequences of same columns ")
+		if !CompareColumns(sourceCols, destiantionCols) {
+			equal = false
 
 		}
+	}
+	if !equal {
+		fmt.Println("The tables are not equal")
+		fmt.Println(src)
+
+		fmt.Println(dest)
+
+	} else {
+		fmt.Println("The table  schema are equal")
 
 	}
+
 }
 func CompareColumns(a, b ColumnInfo) bool {
 	return strings.EqualFold(a.ColumnName, b.ColumnName) &&
