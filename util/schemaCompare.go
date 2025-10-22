@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 )
 
 type ColumnInfo struct {
@@ -13,7 +14,7 @@ type ColumnInfo struct {
 	Column_default string
 }
 
-func GetSchema() ([]ColumnInfo,[]ColumnInfo) {
+func GetSchema() ([]ColumnInfo, []ColumnInfo) {
 	query := `
     SELECT column_name, data_type, is_nullable, column_default 
 FROM information_schema.columns
@@ -21,89 +22,59 @@ FROM information_schema.columns
     ORDER BY ordinal_position
 `
 	fmt.Println("no P")
-	srcConn,destConn, err := Init_Db()
+	srcConn, destConn, err := Init_Db()
 	ctx := context.Background()
 
 	srcCols, err := srcConn.Query(ctx, query, os.Getenv("SRC_TABLE"))
 	HandleError(err)
 	defer srcCols.Close()
-	var src,dest []ColumnInfo
+	var src, dest []ColumnInfo
 
-
-	
-	for srcCols.Next(){
+	for srcCols.Next() {
 		var columninfo ColumnInfo
-	
+
 		err = srcCols.Scan(&columninfo.ColumnName, &columninfo.Datatype, &columninfo.Is_nullable, &columninfo.Column_default)
-    HandleError(err)
-		
+		HandleError(err)
+
 		fmt.Println(columninfo)
 		src = append(src, columninfo)
 
 	}
 
-  
-destCols,err:=destConn.Query(ctx,query,os.Getenv("DEST_TABLE"))
-  defer desCols.Close()
+	destCols, err := destConn.Query(ctx, query, os.Getenv("DEST_TABLE"))
+	defer destCols.Close()
 
-HandleError(err)
+	HandleError(err)
 
-for destCols.Next(){
-	var columninfo ColumnInfo
-	err=destCols.Scan(&columninfo.ColumnName, &columninfo.Datatype, &columninfo.Is_nullable, &columninfo.Column_default)
-    HandleError(err)
-		dest =append(dest,columninfo)
+	for destCols.Next() {
+		var columninfo ColumnInfo
+		err = destCols.Scan(&columninfo.ColumnName, &columninfo.Datatype, &columninfo.Is_nullable, &columninfo.Column_default)
+		HandleError(err)
+		dest = append(dest, columninfo)
 
-
-
- }
-
- for i :=range src {
-	 sourceCols:=src[i]
-	 destiantionCols:=dest[i]
-
-	 if(compareSchema(sourceCols,destiantionCols)){
-		  fmt.Println("The schemas are equal with same sequence")
-
-		 
-	 }else {
-		 fmt.Println("The schemas are not equal but can contain different sequences of same columns ")
-
-	 }
-
-
-
-
- }
-  
-
-
+	}
 }
 
 func compareSchema() {
-	query := `
-    SELECT column_name, data_type, is_nullable, column_default 
-    FROM information_schema.columns
-		WHERE table_name = $1
-    ORDER BY ordinal_position
-`
+	src, dest := GetSchema()
 
-	srcConn, destConn, err := Init_Db()
-	if err != nil {
-		HandleError(err)
+	for i := range src {
+		sourceCols := src[i]
+		destiantionCols := dest[i]
+
+		if CompareColumns(sourceCols, destiantionCols) {
+			fmt.Println("The schemas are equal with same sequence")
+
+		} else {
+			fmt.Println("The schemas are not equal but can contain different sequences of same columns ")
+
+		}
+
 	}
-	srcCols := srcConn.Query(ctx, query, os.Getenv("SRC_TABLE"))
-	destCols := destConn.Query(ctx, query, os.Getenv("DEST_TABLE"))
-
-	for 
-
-
 }
-
 func CompareColumns(a, b ColumnInfo) bool {
 	return strings.EqualFold(a.ColumnName, b.ColumnName) &&
 		strings.EqualFold(a.Datatype, b.Datatype) &&
-		a.IsNullable == b.IsNullable &&
-		((a.ColumnDefault == nil && b.ColumnDefault == nil) ||
-			(a.ColumnDefault != nil && b.ColumnDefault != nil && *a.ColumnDefault == *b.ColumnDefault))
+		a.Is_nullable == b.Is_nullable &&
+		a.Column_default == b.Column_default
 }
